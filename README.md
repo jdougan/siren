@@ -245,18 +245,25 @@ Siren is still a work in progress looking for some real world usage and feedback
 
 ## Appendix: The Siren data model
 
-If Siren is to become a multi-encoding format, then the underlying data model needs to be cleanly defined, along with a bijective mapping to each of the encodings. I don't think we need to go to the lengths Patrick Winston did with formalizing RDF, but some struture would be helpful to understand what is core to the representation versus what is an accident of the JSON context.
+If Siren is to become a multi-encoding format, then the underlying data model needs to be clearly defined, along with a bijective mapping to/from each of the encodings. I don't think we need to go to the lengths Patrick Winston did with formalizing RDF, but some structure would be helpful to understand what is core to the representation versus what is tentative or an accident of the JSON encoding context.
 
 The _type_ attribute in the JSON encoding is unclearly defined as it is overloaded several different ways:
-    * Link.type means encoding type to expect in GET response body
-    * Action.type means encoding type to put in request body
-    * Field.type means the HTML 5 field type (both interpreting the Field.value and validation...like a schema)
-For clarity this model splits _type_ into 3 attributes and will rely on the mappings to change the names if necessary.
+
+* **Link**._type_ means encoding type to expect in GET response body
+* **Action**._type_ means encoding type to put in request body
+* **Field**._type_ means the HTML 5 field type (both interpreting the Field.value and validation...like a schema)
+
+For clarity this model splits _type_ into 3 attributes and will rely on the mappings to change the names as necessary for compatibility.
+
     * _req-enctype_ (**Action**._type_)
     * _resp-enctype_ (**Link**._type_)
     * _field-schema_ (**Field**._type_)
 
-### Model Attributes
+The _value_ and _properties_ attributes need clarification of the type of their values.
+
+The values for the attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would using a **dict** make sense?
+
+### Model Attribute Types
 * _class_ => **list** of **class-id**
 * _title_ => **string**
 * _properties_ => **dict** of (**string**, **jdata**???)
@@ -308,11 +315,17 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
 	* _value_
 
 ### Data types
+* **list**
+    * ordered collection of values
+    * JSON array, Python list, Smalltalk OrderedCollection or Array, etc.
+* **dict**
+    * unordered set of pairs of (key=>string, value)
+    * JSON object, Python dict with string keys, Smalltalk Dictionary with String keys, etc.
 * **string**
     * Unicode
-    * Because JSON is always UTF-8.
+    * RFC-4627 says JSON is always Unicode, with a default encoding of UTF-8
 * **uri**
-    * Unicode characters reduced to 7-bit ASCII via URLencoding for max compatibility?
+    * Unicode characters reduced to 7-bit ASCII via URLencoding for compatibility?
     * Should this really be an IRI? https://stackoverflow.com/questions/2742852/unicode-characters-in-urls#2742985
 * **link-relation**
     * spec'd in RFC-YYYY
@@ -333,11 +346,10 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * serialization specific data inserted verbatim.
     * Nothing uses this, I think.
 
-## JSON Enoding Mapping
-
+## JSON Encoding Mapping
 
 ### Extended Order Example
-This is the Order example at the top with some extensions to exercise more aspects of Siren. All mappings will uese this document as an example.
+This is the Order example at the top with some extra data to exercise more aspects of Siren. All mappings will uese this document as an example.
 ~~~~
 {
   "class": [ "order" ],
@@ -345,8 +357,8 @@ This is the Order example at the top with some extensions to exercise more aspec
       "orderNumber": 42, 
       "itemCount": 3,
       "status": "pending"
-      "arbitrary-jdata": {"parent":"widget", a":42, "b":"thingy", "c":[1,2,3,4,5]}
-      "arbitrary-json": {"parent":"widget", a":42, "b":"thingy", "c":[1,2,3,4,5]}
+      "arbitrary-jdata": {"parent":null, "a":42, "b":true, "c":[1,2,3,4,5]},
+      "arbitrary-json":  {"parent":null, "a":42, "b":true, "c":[1,2,3,4,5]}
   },
   "entities": [
     { 
@@ -390,13 +402,10 @@ This is the Order example at the top with some extensions to exercise more aspec
 }
 ~~~~
 
+## S-expressions Encoding Mapping
+S-expressions have a lot of the advantages of XML, with less of the complexity and overhead. A quality streaming parser can be done in very little code. The drawbacks of sexprs is less standardization and no standard namespaces, but for the semantics of a JSON based protocol that shouldn't be an actual problem. The examples here have as atoms: tokens, double quoted strings with JSON-style character quoting, numbers, true, false, and nil.
 
-
-
-## S-expressions Mapping
-S-expressions have a lot of the advantages of XML, with less of the complexity and overhead. A quality streaming parser can be done in very little code. One of the earliest attemps at a consistent network data encoding was built around s-expressions (RFC-) and Ron Rivest's version of S-expressions are used in some crypto applications.
-
-### Extended Order Example, no implicits
+### Extended Order Example, almost no implicits
 This is the Order example at the top with some extensions to exercise more aspects of Siren.
 ~~~~
 (entity 
@@ -405,8 +414,8 @@ This is the Order example at the top with some extensions to exercise more aspec
     (prop "orderNumber" 42) 
     (prop "status" "pending") 
     (prop "itemCount" 3) 
-    (prop "arbitrary-jdata" (dict "parent" "widget" "a" 42 "b" True "c" (arr 1 2 3 4 5))) 
-    (propa "arbitrary-s-expr" (quote (1 2 3 "foo" (this is a test))))
+    (prop "arbitrary-jdata" (dict "parent" nil "a" 42 "b" true "c" (arr 1 2 3 4 5))) 
+    (propa "arbitrary-sexpr" (10.0 (1 2 3 "foo" (this is a test))))
   (links 
     (link (rel "self") (href "http://api.x.io/orders/42")) 
     (link 
@@ -453,3 +462,8 @@ This is the Order example at the top with some extensions to exercise more aspec
 
 
 ## XML Mapping
+
+
+~~~~
+<!-- ugh   -->
+~~~~
