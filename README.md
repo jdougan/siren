@@ -257,20 +257,20 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * _field-schema_
 
 ### Model Attributes
-_class_ => **list** of **class-id**
-_title_ => **string**
-_properties_ => **dict** of (**string**, **jdata**???)
-_entities_ => **list** of **Link** and (Sub?)**Entity**
-_links_ => **list** of **Links**
-_actions_ => **list** of **Action**
-_name_ => **string** (unique in parent collection context)
-_method_ => **http-method** 
-_href_ => **uri** (required in **Link**, **Action**)
-_req-enctype_ => **media-type** ("type"in **Action**)
-_resp-enctype_ => **media-type** ("type" in **Link**)
-_field-schema_ => **html5-field-type** ("type" in **Field**)
-_rel_ => **list** of **link-relation** (Req. in **Link**, Sub**Entity**)
-_value_ => **jdata**????
+* _class_ => **list** of **class-id**
+* _title_ => **string**
+* _properties_ => **dict** of (**string**, **jdata**???)
+* _entities_ => **list** of **Link** and (Sub?)**Entity**
+* _links_ => **list** of **Links**
+* _actions_ => **list** of **Action**
+* _name_ => **string** (unique in parent collection context)
+* _method_ => **http-method** 
+* _href_ => **uri** (required in **Link**, **Action**)
+* _req-enctype_ => **media-type** ("type"in **Action**)
+* _resp-enctype_ => **media-type** ("type" in **Link**)
+* _field-schema_ => **html5-field-type** ("type" in **Field**)
+* _rel_ => **list** of **link-relation** (Req. in **Link**, Sub**Entity**)
+* _value_ => **jdata**????
 
 ### Model Class Hierarchy and attributes
 * **Object** (abstract)
@@ -318,8 +318,8 @@ _value_ => **jdata**????
     * spec'd in RFC-YYYY
     * extension mechanism uses URIs. Should we care about that or just treat as an opaque string?
 * **media-type**
-   * Unicode string.
-   * spec'd in RFC-ZZZZ
+    * Unicode string.
+    * spec'd in RFC-ZZZZ
 * **html5-field-type**
     * 
 * **http-method**
