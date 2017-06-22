@@ -245,16 +245,16 @@ Siren is still a work in progress looking for some real world usage and feedback
 
 ## Appendix: The Siren data model
 
-If Siren is to become a multi-encoding format, then the underlying data model needs to be cleanly defined, along with a bijective mapping to each of the encodings. I don't think we need to go to the lengths Patrick Winston did with formalizing RDF, but some struture would be helpful.
+If Siren is to become a multi-encoding format, then the underlying data model needs to be cleanly defined, along with a bijective mapping to each of the encodings. I don't think we need to go to the lengths Patrick Winston did with formalizing RDF, but some struture would be helpful to understand what is core to the representation versus what is an accident of the JSON context.
 
-The _type_ attribute in the JSON encoding is badly defined as it is overloaded several different ways:
+The _type_ attribute in the JSON encoding is unclearly defined as it is overloaded several different ways:
     * Link.type means encoding type to expect in GET response body
     * Action.type means encoding type to put in request body
     * Field.type means the HTML 5 field type (both interpreting the Field.value and validation...like a schema)
-For clarity this model splits _type_ into 3 attributes and will rely on the mapping to change the names.
-    * _req-enctype_
-    * _resp-enctype_
-    * _field-schema_
+For clarity this model splits _type_ into 3 attributes and will rely on the mappings to change the names if necessary.
+    * _req-enctype_ (**Action**._type_)
+    * _resp-enctype_ (**Link**._type_)
+    * _field-schema_ (**Field**._type_)
 
 ### Model Attributes
 * _class_ => **list** of **class-id**
@@ -321,14 +321,135 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * Unicode string.
     * spec'd in RFC-ZZZZ
 * **html5-field-type**
-    * 
+    * Unicode string as documented in RFC-AAAA
 * **http-method**
-    * 
+    * Unicode string as documented in RFC-BBBB
 * **classId**
-    * arbitrary str?  Should encourage URIs?
+    * arbitrary str?  Should we encourage URIs?
 * **jdata**
     * Jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
     * Is the repn power here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
 * **opaque-data**
     * serialization specific data inserted verbatim.
+    * Nothing uses this, I think.
 
+## JSON Enoding Mapping
+
+
+### Extended Order Example
+This is the Order example at the top with some extensions to exercise more aspects of Siren. All mappings will uese this document as an example.
+~~~~
+{
+  "class": [ "order" ],
+  "properties": { 
+      "orderNumber": 42, 
+      "itemCount": 3,
+      "status": "pending"
+      "arbitrary-jdata": {"parent":"widget", a":42, "b":"thingy", "c":[1,2,3,4,5]}
+      "arbitrary-json": {"parent":"widget", a":42, "b":"thingy", "c":[1,2,3,4,5]}
+  },
+  "entities": [
+    { 
+      "class": [ "items", "collection" ], 
+      "rel": [ "http://x.io/rels/order-items" ], 
+      "href": "http://api.x.io/orders/42/items",
+      "title":"Link to my items",
+      "type":"application/vnc.siren+json"
+    },
+    {
+      "class": [ "info", "customer" ],
+      "rel": [ "http://x.io/rels/customer" ], 
+      "properties": { 
+        "customerId": "pj123",
+        "name": "Peter Joseph"
+      },
+      "links": [
+        { "rel": [ "self" ], "href": "http://api.x.io/customers/pj123" }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "add-item",
+      "title": "Add Item",
+      "method": "POST",
+      "href": "http://api.x.io/orders/42/items",
+      "type": "application/x-www-form-urlencoded",
+      "fields": [
+        { "name": "orderNumber", "type": "hidden", "value": "42" },
+        { "name": "productCode", "type": "text" },
+        { "name": "quantity", "type": "number" }
+      ]
+    }
+  ],
+  "links": [
+    { "rel": [ "self" ], "href": "http://api.x.io/orders/42" },
+    { "rel": [ "previous" ], "href": "http://api.x.io/orders/41" },
+    { "rel": [ "next" ], "href": "http://api.x.io/orders/43" }
+  ]
+}
+~~~~
+
+
+
+
+## S-expressions Mapping
+S-expressions have a lot of the advantages of XML, with less of the complexity and overhead. A quality streaming parser can be done in very little code. One of the earliest attemps at a consistent network data encoding was built around s-expressions (RFC-) and Ron Rivest's version of S-expressions are used in some crypto applications.
+
+### Extended Order Example, no implicits
+This is the Order example at the top with some extensions to exercise more aspects of Siren.
+~~~~
+(entity 
+  (class "order") 
+  (properties 
+    (prop "orderNumber" 42) 
+    (prop "status" "pending") 
+    (prop "itemCount" 3) 
+    (prop "arbitrary-jdata" (dict "parent" "widget" "a" 42 "b" True "c" (arr 1 2 3 4 5))) 
+    (propa "arbitrary-s-expr" (quote (1 2 3 "foo" (this is a test))))
+  (links 
+    (link (rel "self") (href "http://api.x.io/orders/42")) 
+    (link 
+      (rel "previous") 
+      (href "http://api.x.io/orders/41")) 
+    (link 
+      (rel "next") 
+      (href "http://api.x.io/orders/43"))) 
+  (actions 
+    (action 
+      (name "add-item") 
+      (href "http://api.x.io/orders/42/items") 
+      (title "Add Item") 
+      (req-enctype "application/x-www-form-urlencoded") 
+      (fields 
+        (field 
+          (name "orderNumber") 
+          (field-schema "hidden") 
+          (value "42")) 
+        (field 
+          (name "productCode") 
+          (field-schema "text")) 
+        (field 
+          (name "quantity") 
+          (field-schema "number"))))) 
+  (entities 
+    (link 
+      (rel "http://x.io/rels/order-items") 
+      (href "http://api.x.io/orders/42/items") 
+      (title "Link to my items") 
+      (class "items" "collection") 
+      (resp-enctype "application/vnd.siren+json")) 
+    (entity 
+      (rel "http://x.io/rels/customer") 
+      (class "info" "customer") 
+      (properties 
+        (prop "customerId" "pj123") 
+        (prop "name" "Peter Joseph)) 
+      (links 
+        (link 
+          (rel "self") 
+          (href "http://xrfb.net/id/3"))))))
+~~~~
+
+
+## XML Mapping
