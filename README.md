@@ -240,3 +240,95 @@ Siren supports a resource design style that doesn't have to be primarily CRUD-ba
 ## Feedback
 
 Siren is still a work in progress looking for some real world usage and feedback.  Please contribute!  Feel free to use GitHub Issues to make suggestions or fire up a Pull Request with changes to be reviewed.  Thank you!
+
+
+
+## Appendix: The Siren data model
+
+If Siren is to become a multi-encoding format, then the underlying data model needs to be cleanly defined, along with a bijective mapping to each of the encodings. I don't think we need to go to the lengths Patrick Winston did with formalizing RDF, but some struture would be helpful.
+
+The _type_ attribute in the JSON encoding is badly defined as it is overloaded several different ways:
+    * Link.type means encoding type to expect in GET response body
+    * Action.type means encoding type to put in request body
+    * Field.type means the HTML 5 field type (both interpreting the Field.value and validation...like a schema)
+For clarity this model splits _type_ into 3 attributes and will rely on the mapping to change the names.
+    * _req-enctype_
+    * _resp-enctype_
+    * _field-schema_
+
+### Model Attributes
+_class_ => **list** of **class-id**
+_title_ => **string**
+_properties_ => **dict** of (**string**, **jdata**???)
+_entities_ => **list** of **Link** and (Sub?)**Entity**
+_links_ => **list** of **Links**
+_actions_ => **list** of **Action**
+_name_ => **string** (unique in parent collection context)
+_method_ => **http-method** 
+_href_ => **uri** (required in **Link**, **Action**)
+_req-enctype_ => **media-type** ("type"in **Action**)
+_resp-enctype_ => **media-type** ("type" in **Link**)
+_field-schema_ => **html5-field-type** ("type" in **Field**)
+_rel_ => **list** of **link-relation** (Req. in **Link**, Sub**Entity**)
+_value_ => **jdata**????
+
+### Model Class Hierarchy and attributes
+* **Object** (abstract)
+    * **Action**
+    * **Entity**
+    * **Link**
+    * **Field**
+
+* **Object**
+	* _class_
+	* _title_
+
+* **Entity**
+	* _properties_
+	* _entities_
+	* _links_
+	* _actions_
+	* _rel_ (Required only in subentities)
+
+* **Action**
+	* _name_ (Req. Unique in parent collection.)
+	* _method_
+	* _href_ (Req.)
+	* _resp-enctype_ (Key is "type" in JSON mapping)
+	* _fields_
+
+* **Link**
+	* _rel_ (Req.)
+	* _href_ (Req.)
+	* _resp-enctype_ (Key is "type" in JSON mapping)
+
+* **Field**
+	* _name_ (Req. Unique in parent collection.)
+	* _field-schema_ (Key is "type" in JSON mapping)
+	* _value_
+
+### Data types
+* **string**
+    * Unicode
+    * Because JSON is always UTF-8.
+* **uri**
+    * Unicode characters reduced to 7-bit ASCII via URLencoding for max compatibility?
+    * Should this really be an IRI? https://stackoverflow.com/questions/2742852/unicode-characters-in-urls#2742985
+* **link-relation**
+    * spec'd in RFC-YYYY
+    * extension mechanism uses URIs. Should we care about that or just treat as an opaque string?
+* **media-type**
+   * Unicode string.
+   * spec'd in RFC-ZZZZ
+* **html5-field-type**
+    * 
+* **http-method**
+    * 
+* **classId**
+    * arbitrary str?  Should encourage URIs?
+* **jdata**
+    * Jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
+    * Is the repn power here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
+* **opaque-data**
+    * serialization specific data inserted verbatim.
+
