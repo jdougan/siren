@@ -247,7 +247,7 @@ Siren is still a work in progress looking for some real world usage and feedback
 
 If Siren is to become a multi-encoding format, then the underlying data model needs to be clearly defined, along with a bijective mapping to/from each of the encodings. I don't think we need to go to the lengths Patrick Hayes and the W3C did with formalizing RDF, but some structure would be helpful to understand what is core to the representation versus what is tentative or an accident of the JSON encoding context. 
 
-The JSON encoding defines a lot implicitly, so a bare reference to an attribute _attrName_ isn't definitive, so I'm going to use a **EntityName**._attributeNAme_ notation when referring to elements of the JSON encoding. Entity classes are in boldface with an initial capital (**Entity**), attributes are italicized within initial lowercase (_attrName_), and other types are boldfaced and lowercased (**some-datatype**).
+The JSON encoding defines a lot implicitly, so a bare reference to an attribute _attr-name_ isn't definitive, so I'm going to use a **EntityName**._attribute-name_ notation when referring to elements of the JSON encoding. Entity classes are in boldface with an initial capital (**Entity**), attributes are italicized within initial lowercase (_attrName_), and other types are boldfaced and lowercased (**some-datatype**).
 
 The _type_ attribute in the JSON encoding is unclearly defined as it is overloaded several different ways:
 
@@ -261,11 +261,12 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
 * _resp-enctype_ (**Link**._type_)
 * _field-schema_ (**Field**._type_)
 
+#### Commentary
 > The _value_ and _properties_ attributes need clarification of the type of their values. They are listed here as **jdata**, but could conceiveably be interpreted as **opaque-data**
+> The elements values for the attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would modelling using using a **dict** make sense?
+> Should the collection attributes be modelled as annotated relations? It might help in dealing with uniqueness requirements. OTOH, If we think of the _actions_ and _fields_ as subcomponent relations, where the children are never shared, we don't have to manage the _name_ uniqueness in a global sense.
+> The _links_ relation may be best modelled as the same. The _entities_ are a bit harder though , as they are already either full **Entity** or attenuated shadows of the same.
 
-> Should the collections be reified? It might help in dealing with uniqueness requirements.
-
-> The elements values for the attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would using a **dict** make sense?
 
 
 ### Model Attribute Types
@@ -333,17 +334,18 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * Unicode characters reduced to 7-bit ASCII via URLencoding for compatibility?
     * Should this really be an IRI? https://stackoverflow.com/questions/2742852/unicode-characters-in-urls#2742985
 * **link-relation**
-    * spec'd in RFC-YYYY
-    * extension mechanism uses URIs. Should we care about that or just treat as an opaque string?
+    * Unicode string
+    * Specified in [Web Linking (RFC5988)](http://tools.ietf.org/html/rfc5988) and the [associated registry](http://www.iana.org/assignments/link-relations/link-relations.xhtml)
+    * The extension mechanism uses URIs. Should we care about that and URLencoding or just treat as an opaque Unicode string?
 * **media-type**
     * Unicode string.
-    * spec'd in RFC-ZZZZ
+    * Specified in [Media Type Specifications and Registration Procedures (RFC6838)](http://tools.ietf.org/html/rfc6838) and the [associated registry](http://www.iana.org/assignments/media-types/media-types.xhtml)
 * **html5-field-type**
-    * Unicode string as documented in RFC-AAAA
+    * Unicode string as documented in W3C/WHATWG
 * **http-method**
-    * Unicode string as documented in RFC-BBBB
+    * Unicode string as documented in W3C/WHATWG/RFC
 * **classId**
-    * arbitrary str?  Should we encourage URIs?
+    * Arbitrary opaque string?  Should we encourage URIs?
 * **jdata**
     * Jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
     * Is the representation power here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
