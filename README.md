@@ -247,6 +247,8 @@ Siren is still a work in progress looking for some real world usage and feedback
 
 If Siren is to become a multi-encoding format, then the underlying data model needs to be clearly defined, along with a bijective mapping to/from each of the encodings. I don't think we need to go to the lengths Patrick Hayes and the W3C did with formalizing RDF, but some structure would be helpful to understand what is core to the representation versus what is tentative or an accident of the JSON encoding context. 
 
+Being based in REST principles, Siren views the world as a large collection of web resouorces, some of which are represented as Siren Entities.
+
 The JSON encoding defines a lot implicitly, so a bare reference to an attribute _attr-name_ isn't definitive, so I'm going to use a **EntityName**._attribute-name_ notation when referring to elements of the JSON encoding. Entity classes are in boldface with an initial capital (**Entity**), attributes are italicized within initial lowercase (_attrName_), and other types are boldfaced and lowercased (**some-datatype**).
 
 The _type_ attribute in the JSON encoding is unclearly defined as it is overloaded several different ways:
