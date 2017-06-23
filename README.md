@@ -263,9 +263,13 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
 
 #### Commentary
 > The _value_ and _properties_ attributes need clarification of the type of their values. They are listed here as **jdata**, but could conceiveably be interpreted as **opaque-data**
-> The elements values for the attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would modelling using using a **dict** make sense?
+
+> The elements values for the collection attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would modelling using using a **dict** of (_name_, value)make sense?
 > Should the collection attributes be modelled as annotated relations? It might help in dealing with uniqueness requirements. OTOH, If we think of the _actions_ and _fields_ as subcomponent relations, where the children are never shared, we don't have to manage the _name_ uniqueness in a global sense.
-> The _links_ relation may be best modelled as the same. The _entities_ are a bit harder though , as they are already either full **Entity** or attenuated shadows of the same.
+
+> The _links_ relation may be best modelled as the same. The subentities in _entities_ are a bit harder though , as they are already either full **Entity** or attenuated shadows of the same.
+
+> An odd observation: all the entity collection name are plural, except _class_.
 
 
 
@@ -333,22 +337,24 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
 * **uri**
     * Unicode characters reduced to 7-bit ASCII via URLencoding for compatibility?
     * Should this really be an IRI? https://stackoverflow.com/questions/2742852/unicode-characters-in-urls#2742985
+    * Lots of environments don't have good URI/IRI convertion tools.
 * **link-relation**
-    * Unicode string
+    * Unicode string.
     * Specified in [Web Linking (RFC5988)](http://tools.ietf.org/html/rfc5988) and the [associated registry](http://www.iana.org/assignments/link-relations/link-relations.xhtml)
-    * The extension mechanism uses URIs. Should we care about that and URLencoding or just treat as an opaque Unicode string?
+    * The extension mechanism uses URIs. Should we care about that and the relevant encoding issues or just treat as an opaque Unicode string?
 * **media-type**
     * Unicode string.
     * Specified in [Media Type Specifications and Registration Procedures (RFC6838)](http://tools.ietf.org/html/rfc6838) and the [associated registry](http://www.iana.org/assignments/media-types/media-types.xhtml)
 * **html5-field-type**
-    * Unicode string as documented in W3C/WHATWG
+    * Unicode string as documented for the field tag type attribute in W3C/WHATWG docs.
 * **http-method**
-    * Unicode string as documented in W3C/WHATWG/RFC
-* **classId**
+    * Unicode string as documented in W3C/WHATWG/RFC for the HTTP method sdocumentation
+* **class-id**
     * Arbitrary opaque string?  Should we encourage URIs?
+    * It might be useful to standardize a small vocabulary for cases where interop is very important.
 * **jdata**
-    * Jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
-    * Is the representation power here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
+    * jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
+    * Is the representation capability here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
 * **opaque-data**
     * serialization specific data inserted verbatim.
     * Nothing uses this, I think.
