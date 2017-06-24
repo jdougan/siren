@@ -293,7 +293,7 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
 * _req-enctype_ => **media-type** ("type"in **Action**)
 * _resp-enctype_ => **media-type** ("type" in **Link**)
 * _field-schema_ => **html5-field-type** ("type" in **Field**)
-* _rel_ => **list** of **link-relation** (Req. in **Link**, Sub**Entity**)
+* _rel_ => **list** of **link-relation** (Req. in **Link**, (Sub **Entity**)
 * _value_ => **jdata**
 
 ### Model Class Hierarchy and attributes
