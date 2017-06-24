@@ -249,30 +249,35 @@ If Siren is to become a multi-encoding format, then the underlying data model ne
 
 Being based in REST principles, Siren views the world as a large collection of web resouorces, some of which are represented as Siren Entities.
 
-The JSON encoding defines a lot implicitly, so a bare reference to an attribute _attr-name_ isn't definitive, so I'm going to use a **EntityName**._attribute-name_ notation when referring to elements of the JSON encoding. Entity classes are in boldface with an initial capital (**Entity**), attributes are italicized within initial lowercase (_attrName_), and other types are boldfaced and lowercased (**some-datatype**).
+The JSON encoding defines a lot implicitly, so a bare reference to an attribute _attr-name_ isn't definitive, so I'm going to use a **EntityName**._attribute-name_ notation when referring to elements of the JSON encoding. Entity classes are in boldface with an initial capital (**Entity**), attributes are italicized within initial lowercase (_attr-name_), and other types are boldfaced and lowercased (**some-datatype**).
 
-The _type_ attribute in the JSON encoding is unclearly defined as it is overloaded several different ways:
+The _type_ attribute in the JSON encoding is unclearly defined as its semantics are overloaded several different ways:
 
 * **Link**._type_ means encoding type to expect in GET response body
 * **Action**._type_ means encoding type to put in request body
 * **Field**._type_ means the HTML 5 field type (both interpreting the Field.value and validation...like a schema)
 
-For clarity this model splits _type_ into 3 attributes and will rely on the mappings to change the names as necessary for compatibility.
+For clarity this model splits _type_ into 3 attributes and will rely on the mappings to generae the right names as necessary for the JSON encoding.
 
 * _req-enctype_ (**Action**._type_)
 * _resp-enctype_ (**Link**._type_)
 * _field-schema_ (**Field**._type_)
 
 #### Commentary
-> The _value_ and _properties_ attributes need clarification of the type of their values. They are listed here as **jdata**, but could conceiveably be interpreted as **opaque-data**
+> The _value_ and _properties_ attributes need clarification of the type of their values. They are listed here as **jdata**, but could conceiveably be interpreted as **opaque-data**. Is the representation capability of **jdata** accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data? Answer: After loking at the github issues, it appears to be core, adding that to the sexpr repn.
 
 > The elements values for the collection attributes _action_ and _fields_ have uniquness requirements with regards to _name_. Is this core, tentative or incidental? If it is core would modelling using using a **dict** of (_name_, value)make sense?
 > Should the collection attributes be modelled as annotated relations? It might help in dealing with uniqueness requirements. OTOH, If we think of the _actions_ and _fields_ as subcomponent relations, where the children are never shared, we don't have to manage the _name_ uniqueness in a global sense.
 
 > The _links_ relation may be best modelled as the same. The subentities in _entities_ are a bit harder though , as they are already either full **Entity** or attenuated shadows of the same.
 
-> An odd observation: all the entity collection name are plural, except _class_.
+> An oddity: all the entity collection name are plural, except _class_.
 
+> With _type_ split, we could potentially put _resp-enctype_ on **Action** which might help clients trying to search for compatible actions.
+
+> Might be useful to specify that the **Field**s and such are only specified to work with the _req-enctype_ values "application/x-www-form-urlencoded" and "multipart/form-data", thus opening up space for later aditions.
+
+> My inclination is to specify "MUST IGNORE" as the primary affordance for expansions. It has failure cases, but it has worked pretty well for HTTP. OTOH, HTTP does have a verison number in the request.
 
 
 ### Model Attribute Types
@@ -335,11 +340,11 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * JSON object, Python dict with string keys, Smalltalk Dictionary with String keys, etc.
 * **string**
     * Unicode
-    * RFC-4627 says JSON is always Unicode, with a default encoding of UTF-8
+    * [JSON (RFC4627)](http://tools.ietf.org/html/rfc4627) says JSON is always Unicode, with a default encoding of UTF-8.
 * **uri**
     * Unicode characters reduced to 7-bit ASCII via URLencoding for compatibility?
     * Should this really be an IRI? https://stackoverflow.com/questions/2742852/unicode-characters-in-urls#2742985
-    * Lots of environments don't have good URI/IRI convertion tools.
+    * Lots of environments don't have good URI/IRI convertion tools but handle plain URIs well enough.
 * **link-relation**
     * Unicode string.
     * Specified in [Web Linking (RFC5988)](http://tools.ietf.org/html/rfc5988) and the [associated registry](http://www.iana.org/assignments/link-relations/link-relations.xhtml)
@@ -356,13 +361,12 @@ For clarity this model splits _type_ into 3 attributes and will rely on the mapp
     * It might be useful to standardize a small vocabulary for cases where interop is very important.
 * **jdata**
     * jdata is the set of entities that can be most naturally representied by JSON across platforms. Dict, Array, Bool, Number, etc.
-    * Is the representation capability here accidental or core? If I were to make an XML serialization, would the properties look more like json or just be arbitrary XML data?
 * **opaque-data**
-    * serialization specific data inserted verbatim.
+    * Encoding specific data inserted verbatim.
     * Nothing uses this, I think.
 
 ## JSON Encoding Mapping
-The original JSON encoding is not very explicit, with the client having to infer the kinds of entitys from their position in the JSON structure and some attribute semantics changing due to position.
+The original JSON encoding is not very explicit, with the client having to infer the kinds of entitys from their position in the JSON structure and some attribute semantics changing due to position. This is not a killer issue, unless the protocol gets significantly more complex.
 
 ### Extended Order Example
 This is the Order example at the top with some extra data to exercise more aspects of Siren. All mappings will uese this document as an example.
@@ -419,7 +423,7 @@ This is the Order example at the top with some extra data to exercise more aspec
 ~~~~
 
 ## S-expressions Encoding Mapping
-S-expressions have a lot of the advantages of XML, with less of the complexity and overhead. A quality streaming parser can be done in very little code. The drawbacks of sexprs is less standardization and no standard namespaces, but for the semantics of a JSON based protocol that shouldn't be an actual problem. The examples here have as atoms: tokens, double quoted strings with JSON-style character quoting, numbers, true, false, and nil.
+S-expressions have a lot of the advantages of XML, with less of the complexity and overhead. A quality streaming parser can be done in very little code. The drawbacks of sexprs is less standardization and no standard namespace support, but for the semantics of a JSON based protocol that shouldn't be an actual problem. The examples here have as atoms: tokens, double quoted strings with JSON-style character quoting, numbers, true, false, and nil.
 
 ### Extended Order Example, almost no implicits
 This is the Order example at the top with some extensions to exercise more aspects of Siren. The encoding is fairly explicit, with most component lists with a token in the first place to indicate intended semantics.
@@ -427,10 +431,11 @@ This is the Order example at the top with some extensions to exercise more aspec
 (entity 
   (class "order") 
   (properties 
-    (prop "orderNumber" 42) 
-    (prop "status" "pending") 
-    (prop "itemCount" 3) 
-    (prop "arbitrary-jdata" (dict "parent" nil "a" 42 "b" true "c" (arr 1 2 3 4 5))) 
+    ("orderNumber" 42) 
+    ("status" "pending") 
+    ("itemCount" 3) 
+    ;;; possible alternate repn for individual properties
+    (prop "arbitrary-jdata" (dict "parent" nil "a" 42 "b" true "c" (liist 1 2 3 4 5))) 
     (prop-opaque "arbitrary-sexpr" (10.0 (1 2 3 "foo" (this is a test))))
   (links 
     (link (rel "self") (href "http://api.x.io/orders/42")) 
@@ -468,8 +473,8 @@ This is the Order example at the top with some extensions to exercise more aspec
       (rel "http://x.io/rels/customer") 
       (class "info" "customer") 
       (properties 
-        (prop "customerId" "pj123") 
-        (prop "name" "Peter Joseph)) 
+        ("customerId" "pj123") 
+        ("name" "Peter Joseph")) 
       (links 
         (link 
           (rel "self") 
